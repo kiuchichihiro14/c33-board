@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>chihiro簡易掲示板</title>
+    <meta charset="utf-8">
+    <style>
+      header, footer {
+        background-color: #ddd;
+        padding: 1rem;
+        text-align: center;
+      }
+      .setumei1 {
+        background-color: yellow;
+        display: inline;
+      }
+      .toukou {
+        border: 1px solid #333;
+        padding: 5px;
+        background-color: #f2f2f2;
+      }
+      .coment {
+        border: 1px solid #333;
+        padding: 5px;
+        background-color: #aaa;
+      }
+      .sabisii {
+        color: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>c33簡易掲示板　　　Ver.0.5</h2>
+    <h4 id="userCount">現在の参加者数: 0人</h4>
+    <header>
+      <h1>インターネット掲示板にようこそ!</h1>
+    </header>
+    <h5>
+      chihiroが適当に作りました。<br>なんか適当に遊んでってください。
+    </h5>
+    <h4>ルール↓</h4>
+    <h5>
+      <span class="setumei1">暴力的な言葉、汚い(卑猥な)言葉、または特定の誰かを非難する言葉</span>は書き込まないでください!
+    </h5>
+    <h5>
+      このサーバーは<span class="setumei1">社会の授業時、総合の授業時及び千尋の気が向いているとき</span>に公開されこのサイトにアクセスできます。
+    </h5>
+    <h5 class="sabisii">
+      なんか最近掲示板作ったのに誰も投稿してくれなくて寂しいので投稿して…
+    </h5>
+    <h5>
+      なんか「こんな感じに変えて!!」とかあったら「リクエスト」っていう名前で投稿してください。
+    </h5>
+
+    <div class="coment">
+      <ul id="messages"></ul>
+    </div>
+
+    <h3>投稿フォーム↓</h3>
+    <div class="toukou">
+      <input id="name" placeholder="名前"><br>
+      <textarea id="msg" placeholder="メッセージ"></textarea><br>
+      <button onclick="sendMessage()">投稿</button><br>
+    </div>
+
+    <footer>
+      <h5>chihiro ga tukuri masita.</h5>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      // Firebaseの初期化
+      const firebaseConfig = {
+        apiKey: "AIzaSyAMeK4DAI7tLa1_bT9_bVjY-pvVR8HV70A",
+        authDomain: "chihirokeizibann.firebaseapp.com",
+        projectId: "chihirokeizibann",
+        storageBucket: "chihirokeizibann.firebasestorage.app",
+        messagingSenderId: "292382885477",
+        appId: "1:292382885477:web:7abe43da06f062d890288c"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const msgRef = db.collection("messages");
+      const onlineRef = db.collection("online_users");
+
+      // 自分専用のデータを作る（ランダムなID）
+      const myOnlineDoc = onlineRef.doc();
+      myOnlineDoc.set({
+        online: true,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 5秒おきに「生存確認」を送る
+      setInterval(() => {
+        myOnlineDoc.update({
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }, 5000);
+
+      // ページを閉じたときに消す
+      window.addEventListener("beforeunload", () => {
+        myOnlineDoc.delete();
+      });
+
+      // 投稿一覧を表示（○○分前形式）
+      msgRef.orderBy("time").onSnapshot(snapshot => {
+        const list = document.getElementById("messages");
+        list.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const now = new Date();
+          const postedTime = data.time ? data.time.toDate() : null;
+          let timeText = "時刻不明";
+
+          if (postedTime) {
+            const diffMs = now - postedTime;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+
+            if (diffSec < 60) {
+              timeText = `${diffSec}秒前`;
+            } else if (diffMin < 60) {
+              timeText = `${diffMin}分前`;
+            } else if (diffHour < 24) {
+              timeText = `${diffHour}時間前`;
+            } else {
+              timeText = `${diffDay}日前`;
+            }
+          }
+
+          const li = document.createElement("li");
+          li.textContent = `${data.name}: ${data.message} (${timeText})`;
+          list.appendChild(li);
+        });
+      });
+
+      // オンライン人数表示（最新1分以内だけカウント）
+      onlineRef.onSnapshot(snapshot => {
+        const now = new Date();
+        let count = 0;
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.timestamp && (now - data.timestamp.toDate()) < 60000) { // 60000ms = 1分
+            count++;
+          }
+        });
+        document.getElementById("userCount").textContent = `現在の参加者数: ${count}人`;
+      });
+
+      function sendMessage() {
+        const name = document.getElementById("name").value;
+        const msg = document.getElementById("msg").value;
+
+        if (!name || !msg) {
+          alert("名前とメッセージを入力してください！");
+          return;
+        }
+
+        msgRef.add({
+          name: name,
+          message: msg,
+          time: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById("msg").value = "";
+      }
+
+
+    </script>
+
+  </body>
+</html>

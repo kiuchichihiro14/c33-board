@@ -29,26 +29,39 @@
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.0.5</h2>
+    <h2>c33簡易掲示板　　　Ver.0.6</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
+
     <header>
       <h1>インターネット掲示板にようこそ!</h1>
     </header>
+
     <h5>
       chihiroが適当に作りました。<br>なんか適当に遊んでってください。
     </h5>
+
     <h4>ルール↓</h4>
     <h5>
-      <span class="setumei1">暴力的な言葉、汚い(卑猥な)言葉、または特定の誰かを非難する言葉</span>は書き込まないでください!
+      <span class="setumei1">
+        暴力的な言葉、汚い(卑猥な)言葉、または特定の誰かを非難する言葉
+      </span>
+      は書き込まないでください!
     </h5>
+
     <h5>
-      このサーバーは<span class="setumei1">社会の授業時、総合の授業時及び千尋の気が向いているとき</span>に公開されこのサイトにアクセスできます。
+      このサーバーは
+      <span class="setumei1">
+        社会の授業時、総合の授業時及び千尋の気が向いているとき
+      </span>
+      に公開されます。
     </h5>
+
     <h5 class="sabisii">
-      なんか最近掲示板作ったのに誰も投稿してくれなくて寂しいので投稿して…
+      最近誰も投稿してくれなくて寂しいので投稿して…
     </h5>
+
     <h5>
-      なんか「こんな感じに変えて!!」とかあったら「リクエスト」っていう名前で投稿してください。
+      「こんな感じに変えて!!」は「リクエスト」という名前で投稿してください。
     </h5>
 
     <div class="coment">
@@ -57,8 +70,8 @@
 
     <h3>投稿フォーム↓</h3>
     <div class="toukou">
-      <input id="name" placeholder="名前"><br>
-      <textarea id="msg" placeholder="メッセージ"></textarea><br>
+      <input id="name" placeholder="名前（30文字以内）" maxlength="30"><br>
+      <textarea id="msg" placeholder="メッセージ（100文字以内）" maxlength="100"></textarea><br>
       <button onclick="sendMessage()">投稿</button><br>
     </div>
 
@@ -71,7 +84,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-      // Firebaseの初期化
+      // Firebase初期化
       const firebaseConfig = {
         apiKey: "AIzaSyAMeK4DAI7tLa1_bT9_bVjY-pvVR8HV70A",
         authDomain: "chihirokeizibann.firebaseapp.com",
@@ -86,29 +99,28 @@
       const msgRef = db.collection("messages");
       const onlineRef = db.collection("online_users");
 
-      // 自分専用のデータを作る（ランダムなID）
+      // オンライン管理
       const myOnlineDoc = onlineRef.doc();
       myOnlineDoc.set({
         online: true,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // 5秒おきに「生存確認」を送る
       setInterval(() => {
         myOnlineDoc.update({
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
       }, 5000);
 
-      // ページを閉じたときに消す
       window.addEventListener("beforeunload", () => {
         myOnlineDoc.delete();
       });
 
-      // 投稿一覧を表示（○○分前形式）
+      // 投稿表示
       msgRef.orderBy("time").onSnapshot(snapshot => {
         const list = document.getElementById("messages");
         list.innerHTML = "";
+
         snapshot.forEach(doc => {
           const data = doc.data();
           const now = new Date();
@@ -139,25 +151,39 @@
         });
       });
 
-      // オンライン人数表示（最新1分以内だけカウント）
+      // オンライン人数表示（1分以内）
       onlineRef.onSnapshot(snapshot => {
         const now = new Date();
         let count = 0;
+
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (data.timestamp && (now - data.timestamp.toDate()) < 60000) { // 60000ms = 1分
+          if (data.timestamp && (now - data.timestamp.toDate()) < 60000) {
             count++;
           }
         });
-        document.getElementById("userCount").textContent = `現在の参加者数: ${count}人`;
+
+        document.getElementById("userCount").textContent =
+          `現在の参加者数: ${count}人`;
       });
 
+      // 投稿処理
       function sendMessage() {
-        const name = document.getElementById("name").value;
-        const msg = document.getElementById("msg").value;
+        const name = document.getElementById("name").value.trim();
+        const msg = document.getElementById("msg").value.trim();
 
         if (!name || !msg) {
           alert("名前とメッセージを入力してください！");
+          return;
+        }
+
+        if (name.length > 30) {
+          alert("名前は30文字以内にしてください！");
+          return;
+        }
+
+        if (msg.length > 100) {
+          alert("メッセージは100文字以内にしてください！");
           return;
         }
 
@@ -169,9 +195,6 @@
 
         document.getElementById("msg").value = "";
       }
-
-
     </script>
-
   </body>
 </html>

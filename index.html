@@ -29,7 +29,7 @@
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.0.6</h2>
+    <h2>c33簡易掲示板　　　Ver.0.7</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
 
     <header>
@@ -67,6 +67,8 @@
     <div class="coment">
       <ul id="messages"></ul>
     </div>
+
+    <button onclick="toggleOldMessages()">過去の投稿を表示 / 非表示</button>
 
     <h3>投稿フォーム↓</h3>
     <div class="toukou">
@@ -116,12 +118,44 @@
         myOnlineDoc.delete();
       });
 
+      // 過去メッセージ表示フラグ
+      let showOldMessages = false;
+      let oldMessagesCache = [];
+
+      function toggleOldMessages() {
+        showOldMessages = !showOldMessages;
+        renderMessages(currentNewMessages, oldMessagesCache);
+      }
+
       // 投稿表示
-      msgRef.orderBy("time").onSnapshot(snapshot => {
+      let currentNewMessages = [];
+
+      function renderMessages(newMessages, oldMessages) {
         const list = document.getElementById("messages");
         list.innerHTML = "";
 
-        snapshot.forEach(doc => {
+        // 過去メッセージを先に表示（表示ONのとき）
+        if (showOldMessages) {
+          oldMessages.forEach(text => {
+            const li = document.createElement("li");
+            li.textContent = text;
+            list.appendChild(li);
+          });
+        }
+
+        // 最新100件を表示
+        newMessages.forEach(text => {
+          const li = document.createElement("li");
+          li.textContent = text;
+          list.appendChild(li);
+        });
+      }
+
+      msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
+        const newMessages = [];
+        const oldMessages = [];
+
+        snapshot.docs.forEach((doc, index) => {
           const data = doc.data();
           const now = new Date();
           const postedTime = data.time ? data.time.toDate() : null;
@@ -145,10 +179,18 @@
             }
           }
 
-          const li = document.createElement("li");
-          li.textContent = `${data.name}: ${data.message} (${timeText})`;
-          list.appendChild(li);
+          const text = `${data.name}: ${data.message} (${timeText})`;
+
+          if (index < 100) {
+            newMessages.unshift(text);
+          } else {
+            oldMessages.unshift(text);
+          }
         });
+
+        oldMessagesCache = oldMessages;
+        currentNewMessages = newMessages;
+        renderMessages(currentNewMessages, oldMessagesCache);
       });
 
       // オンライン人数表示（1分以内）

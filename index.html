@@ -29,7 +29,7 @@
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.0.7</h2>
+    <h2>c33簡易掲示板　　　Ver.0.8</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
     <h2>卒業まで : 12日</h2>
 
@@ -137,7 +137,6 @@
         const list = document.getElementById("messages");
         list.innerHTML = "";
 
-        // 過去メッセージを先に表示（表示ONのとき）
         if (showOldMessages) {
           oldMessages.forEach(text => {
             const li = document.createElement("li");
@@ -146,7 +145,6 @@
           });
         }
 
-        // 最新100件を表示
         newMessages.forEach(text => {
           const li = document.createElement("li");
           li.textContent = text;
@@ -212,6 +210,12 @@
           `現在の参加者数: ${count}人`;
       });
 
+      // 🔥 NGワードリスト（安全・中学生向け）
+      const NG_WORDS = [
+        "くんに", "クンニ", "まんこ",
+        "ちんこ", "あなる", "アナル","クリトリス","くりとりす","げい","ゲイ","えろ","エロ","体位","いく","イク","イキ","いき"
+      ];
+
       // 投稿処理
       function sendMessage() {
         const name = document.getElementById("name").value.trim();
@@ -232,6 +236,14 @@
           return;
         }
 
+        // 🔥 NGワードチェック
+        for (const word of NG_WORDS) {
+          if (msg.includes(word)) {
+            alert(`NGワード「${word}」が含まれています！`);
+            return;
+          }
+        }
+
         msgRef.add({
           name: name,
           message: msg,
@@ -243,13 +255,3 @@
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-

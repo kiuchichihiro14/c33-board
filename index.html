@@ -29,9 +29,9 @@
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.0.8</h2>
+    <h2>c33簡易掲示板　　　Ver.0.9</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
-    <h2>卒業まで : <span id="graduationCountdown">計算中...</span></h2>
+    <h2>卒業まで : <span id="countdown"></span></h2>
 
     <header>
       <h1>インターネット掲示板にようこそ!</h1>
@@ -216,14 +216,6 @@
         "ちんこ", "あなる", "アナル","クリトリス","くりとりす","げい","ゲイ","えろ","エロ","体位","いく","イク","イキ","いき"
       ];
 
-      // NGワードチェック関数（名前・メッセージ両方対応）
-      function containsNG(text) {
-        for (const word of NG_WORDS) {
-          if (text.includes(word)) return word;
-        }
-        return null;
-      }
-
       // 投稿処理
       function sendMessage() {
         const name = document.getElementById("name").value.trim();
@@ -244,17 +236,12 @@
           return;
         }
 
-        // NGワードチェック
-        let ngWord = containsNG(name);
-        if (ngWord) {
-          alert(`名前にNGワード「${ngWord}」が含まれています！`);
-          return;
-        }
-
-        ngWord = containsNG(msg);
-        if (ngWord) {
-          alert(`メッセージにNGワード「${ngWord}」が含まれています！`);
-          return;
+        // 🔥 NGワードチェック（名前も含める）
+        for (const word of NG_WORDS) {
+          if (msg.includes(word) || name.includes(word)) {
+            alert(`NGワード「${word}」が含まれています！`);
+            return;
+          }
         }
 
         msgRef.add({
@@ -266,23 +253,30 @@
         document.getElementById("msg").value = "";
       }
 
-      // 卒業までカウントダウン
+      // 卒業式カウントダウン
+      const graduationDate = new Date("2026-03-10T10:00:00");
+
       function updateCountdown() {
-        const today = new Date();
-        const graduation = new Date(today.getFullYear(), 2, 10); // 3月は2 (0スタート)
-        
-        // 今年の卒業日が過ぎていたら来年の卒業日を対象に
-        if (today > graduation) {
-          graduation.setFullYear(graduation.getFullYear() + 1);
+        const now = new Date();
+        const diffMs = graduationDate - now;
+        if (diffMs <= 0) {
+          document.getElementById("countdown").textContent = "卒業おめでとう！🎉";
+          return;
         }
 
-        const diffTime = graduation - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        document.getElementById("graduationCountdown").textContent = `${diffDays}日`;
+        const diffSec = Math.floor(diffMs / 1000);
+        const days = Math.floor(diffSec / (60 * 60 * 24));
+        const hours = Math.floor((diffSec % (60 * 60 * 24)) / (60 * 60));
+        const minutes = Math.floor((diffSec % (60 * 60)) / 60);
+        const seconds = diffSec % 60;
+
+        document.getElementById("countdown").textContent =
+          `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`;
       }
 
+      setInterval(updateCountdown, 1000);
       updateCountdown();
-      setInterval(updateCountdown, 1000 * 60 * 60); // 1時間ごとに更新
+
     </script>
   </body>
 </html>

@@ -74,8 +74,8 @@
 
     <h3>投稿フォーム↓</h3>
     <div class="toukou">
-      <input id="name" placeholder="名前（5文字以内）" maxlength="30"><br>
-      <textarea id="msg" placeholder="メッセージ（10文字以内）" maxlength="100"></textarea><br>
+      <input id="name" placeholder="名前（2文字以内）" maxlength="30"><br>
+      <textarea id="msg" placeholder="メッセージ（3文字以内）" maxlength="100"></textarea><br>
       <button onclick="sendMessage()">投稿</button><br>
     </div>
 
@@ -221,13 +221,13 @@
           return;
         }
 
-        if (name.length > 5) {
-          alert("名前は5文字以内にしてください！");
+        if (name.length > 2) {
+          alert("名前は2文字以内にしてください！");
           return;
         }
 
-        if (msg.length > 10) {
-          alert("メッセージは10文字以内にしてください！");
+        if (msg.length > 3) {
+          alert("メッセージは3文字以内にしてください！");
           return;
         }
 
@@ -242,6 +242,7 @@
     </script>
   </body>
 </html>
+
 
 
 

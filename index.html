@@ -29,7 +29,7 @@
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.0.9</h2>
+    <h2>c33簡易掲示板　　　Ver.1.0</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
     <h2>卒業まで : <span id="countdown"></span></h2>
 
@@ -84,14 +84,12 @@
       <h5>chihiro ga tukuri masita.</h5>
     </footer>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-      // Firebase初期化
       const firebaseConfig = {
-        apiKey: "AIzaSyAMeK4DAI7tLa1_bT9_bVjY-pvVR8HV70A",
+        apiKey: "AIzaSy...",
         authDomain: "chihirokeizibann.firebaseapp.com",
         projectId: "chihirokeizibann",
         storageBucket: "chihirokeizibann.firebasestorage.app",
@@ -104,7 +102,6 @@
       const msgRef = db.collection("messages");
       const onlineRef = db.collection("online_users");
 
-      // オンライン管理
       const myOnlineDoc = onlineRef.doc();
       myOnlineDoc.set({
         online: true,
@@ -121,34 +118,59 @@
         myOnlineDoc.delete();
       });
 
-      // 過去メッセージ表示フラグ
       let showOldMessages = false;
       let oldMessagesCache = [];
+      let currentNewMessages = [];
 
       function toggleOldMessages() {
         showOldMessages = !showOldMessages;
         renderMessages(currentNewMessages, oldMessagesCache);
       }
 
-      // 投稿表示
-      let currentNewMessages = [];
+      // 🔥 安全なタグ変換
+      function formatText(text) {
+        text = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        text = text
+          .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<strong>$1</strong>")
+          .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span style='color:red;'>$1</span>")
+          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span style='color:gold;'>$1</span>");
+
+        return text;
+      }
 
       function renderMessages(newMessages, oldMessages) {
         const list = document.getElementById("messages");
         list.innerHTML = "";
 
+        function createMessageElement(text) {
+          const li = document.createElement("li");
+          const match = text.match(/^(.*?): (.*) \((.*)\)$/);
+
+          if (match) {
+            const name = formatText(match[1]);
+            const message = formatText(match[2]);
+            const time = match[3];
+
+            li.innerHTML = `<strong>${name}</strong>: ${message} (${time})`;
+          } else {
+            li.innerHTML = formatText(text);
+          }
+
+          return li;
+        }
+
         if (showOldMessages) {
           oldMessages.forEach(text => {
-            const li = document.createElement("li");
-            li.textContent = text;
-            list.appendChild(li);
+            list.appendChild(createMessageElement(text));
           });
         }
 
         newMessages.forEach(text => {
-          const li = document.createElement("li");
-          li.textContent = text;
-          list.appendChild(li);
+          list.appendChild(createMessageElement(text));
         });
       }
 
@@ -169,24 +191,16 @@
             const diffHour = Math.floor(diffMin / 60);
             const diffDay = Math.floor(diffHour / 24);
 
-            if (diffSec < 60) {
-              timeText = `${diffSec}秒前`;
-            } else if (diffMin < 60) {
-              timeText = `${diffMin}分前`;
-            } else if (diffHour < 24) {
-              timeText = `${diffHour}時間前`;
-            } else {
-              timeText = `${diffDay}日前`;
-            }
+            if (diffSec < 60) timeText = `${diffSec}秒前`;
+            else if (diffMin < 60) timeText = `${diffMin}分前`;
+            else if (diffHour < 24) timeText = `${diffHour}時間前`;
+            else timeText = `${diffDay}日前`;
           }
 
           const text = `${data.name}: ${data.message} (${timeText})`;
 
-          if (index < 100) {
-            newMessages.unshift(text);
-          } else {
-            oldMessages.unshift(text);
-          }
+          if (index < 100) newMessages.unshift(text);
+          else oldMessages.unshift(text);
         });
 
         oldMessagesCache = oldMessages;
@@ -194,7 +208,6 @@
         renderMessages(currentNewMessages, oldMessagesCache);
       });
 
-      // オンライン人数表示（1分以内）
       onlineRef.onSnapshot(snapshot => {
         const now = new Date();
         let count = 0;
@@ -210,13 +223,12 @@
           `現在の参加者数: ${count}人`;
       });
 
-      // 🔥 NGワードリスト（安全・中学生向け）
       const NG_WORDS = [
-        "くんに", "クンニ", "まんこ",
-        "ちんこ", "あなる", "アナル","クリトリス","くりとりす","げい","ゲイ","えろ","エロ","体位","いく","イク","イキ","いき"
+        "くんに","クンニ","まんこ","ちんこ","あなる","アナル",
+        "クリトリス","くりとりす","げい","ゲイ","えろ","エロ",
+        "体位","いく","イク","イキ","いき"
       ];
 
-      // 投稿処理
       function sendMessage() {
         const name = document.getElementById("name").value.trim();
         const msg = document.getElementById("msg").value.trim();
@@ -236,7 +248,6 @@
           return;
         }
 
-        // 🔥 NGワードチェック（名前も含める）
         for (const word of NG_WORDS) {
           if (msg.includes(word) || name.includes(word)) {
             alert(`NGワード「${word}」が含まれています！`);
@@ -253,12 +264,12 @@
         document.getElementById("msg").value = "";
       }
 
-      // 卒業式カウントダウン
       const graduationDate = new Date("2026-03-10T10:00:00");
 
       function updateCountdown() {
         const now = new Date();
         const diffMs = graduationDate - now;
+
         if (diffMs <= 0) {
           document.getElementById("countdown").textContent = "卒業おめでとう！🎉";
           return;
@@ -276,8 +287,8 @@
 
       setInterval(updateCountdown, 1000);
       updateCountdown();
-
     </script>
   </body>
 </html>
+
 

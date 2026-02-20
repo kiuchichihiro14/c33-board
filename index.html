@@ -27,13 +27,16 @@
         color: #999;
       }
 
-      /* 🔥 追加 */
+      /* 🔥 追加カラー */
+      .blue { color: blue; }
       .red { color: red; }
       .yellow { color: gold; }
+      .green { color: green; }
+      .orange { color: orange; }
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.1.1</h2>
+    <h2>c33簡易掲示板　　　Ver.1.2</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
     <h2>卒業まで : <span id="countdown"></span></h2>
 
@@ -131,7 +134,7 @@
         renderMessages(currentNewMessages, oldMessagesCache);
       }
 
-      // 🔥 安全なタグ変換（完全版）
+      /* 🔥 安全タグ変換（新仕様対応） */
       function formatText(text) {
         text = text
           .replace(/&/g, "&amp;")
@@ -139,9 +142,12 @@
           .replace(/>/g, "&gt;");
 
         text = text
-          .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<strong>$1</strong>")
+          .replace(/&lt;ft&gt;(.*?)&lt;\/ft&gt;/g, "<strong>$1</strong>")
+          .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<span class='blue'>$1</span>")
           .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span class='red'>$1</span>")
-          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>");
+          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>")
+          .replace(/&lt;g&gt;(.*?)&lt;\/g&gt;/g, "<span class='green'>$1</span>")
+          .replace(/&lt;o&gt;(.*?)&lt;\/o&gt;/g, "<span class='orange'>$1</span>");
 
         return text;
       }
@@ -158,7 +164,6 @@
             const name = formatText(match[1]);
             const message = formatText(match[2]);
             const time = match[3];
-
             li.innerHTML = `<strong>${name}</strong>: ${message} (${time})`;
           } else {
             li.innerHTML = formatText(text);
@@ -294,6 +299,4 @@
     </script>
   </body>
 </html>
-
-
 

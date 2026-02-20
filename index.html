@@ -26,10 +26,14 @@
       .sabisii {
         color: #999;
       }
+
+      /* 🔥 追加 */
+      .red { color: red; }
+      .yellow { color: gold; }
     </style>
   </head>
   <body>
-    <h2>c33簡易掲示板　　　Ver.1.0</h2>
+    <h2>c33簡易掲示板　　　Ver.1.1</h2>
     <h4 id="userCount">現在の参加者数: 0人</h4>
     <h2>卒業まで : <span id="countdown"></span></h2>
 
@@ -127,7 +131,7 @@
         renderMessages(currentNewMessages, oldMessagesCache);
       }
 
-      // 🔥 安全なタグ変換
+      // 🔥 安全なタグ変換（完全版）
       function formatText(text) {
         text = text
           .replace(/&/g, "&amp;")
@@ -136,8 +140,8 @@
 
         text = text
           .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<strong>$1</strong>")
-          .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span style='color:red;'>$1</span>")
-          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span style='color:gold;'>$1</span>");
+          .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span class='red'>$1</span>")
+          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>");
 
         return text;
       }
@@ -290,5 +294,6 @@
     </script>
   </body>
 </html>
+
 
 

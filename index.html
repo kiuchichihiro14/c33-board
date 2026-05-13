@@ -13,9 +13,12 @@
       justify-content: center;
     }
 
-    /* デバイス対応幅 */
+    /* 横幅修正（ここが今回の重要ポイント） */
     .main {
-      width: min(95%, 700px);
+      width: 100%;
+      padding: 0 10px;
+      box-sizing: border-box;
+      max-width: none; /* ←固定解除 */
     }
 
     header, footer, .toukou, .coment {
@@ -36,7 +39,6 @@
       margin: 8px 0;
     }
 
-    /* 投稿リスト */
     #messages {
       list-style: none;
       padding: 0;
@@ -45,10 +47,9 @@
 
     #messages li {
       background: white;
-      margin: 4px 0;   /* ←間隔縮小 */
+      margin: 4px 0;
       padding: 8px;
       border-radius: 8px;
-      box-shadow: none;
     }
 
     input, textarea {
@@ -113,7 +114,7 @@
   <h3>投稿フォーム</h3>
 
   <div class="toukou">
-    <input id="name" placeholder="名前（15文字以内）" maxlength="30">
+    <input id="name" placeholder="名前（15文字以内）">
     <textarea id="msg" placeholder="メッセージ"></textarea>
     <button onclick="sendMessage()">投稿</button>
   </div>
@@ -142,36 +143,18 @@ let showOldMessages = false;
 let oldMessagesCache = [];
 let currentNewMessages = [];
 
-/* 名前保存 */
-let myName = localStorage.getItem("myName") || "";
-document.getElementById("name").value = myName;
-
-document.getElementById("name").addEventListener("input", (e) => {
-  localStorage.setItem("myName", e.target.value);
-});
-
 /* 表示切替 */
 function toggleOldMessages() {
   showOldMessages = !showOldMessages;
   renderMessages(currentNewMessages, oldMessagesCache);
 }
 
-/* 色・装飾 */
+/* 安全処理 */
 function formatText(text) {
-  text = text
+  return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-
-  text = text
-    .replace(/&lt;ft&gt;(.*?)&lt;\/ft&gt;/g, "<strong>$1</strong>")
-    .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<span class='blue'>$1</span>")
-    .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span class='red'>$1</span>")
-    .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>")
-    .replace(/&lt;g&gt;(.*?)&lt;\/g&gt;/g, "<span class='green'>$1</span>")
-    .replace(/&lt;o&gt;(.*?)&lt;\/o&gt;/g, "<span class='orange'>$1</span>");
-
-  return text;
 }
 
 /* 表示 */
@@ -181,6 +164,7 @@ function renderMessages(newMessages, oldMessages) {
 
   function createMessageElement(text) {
     const li = document.createElement("li");
+
     const match = text.match(/^(.*?): (.*) \((.*)\)$/);
 
     if (match) {
@@ -188,22 +172,21 @@ function renderMessages(newMessages, oldMessages) {
       const message = formatText(match[2]);
       const time = match[3];
 
-      li.innerHTML = `
-        <div style="font-weight:bold;">${name}</div>
-        <div>${message}</div>
-        <div style="font-size:12px;color:#888;">${time}</div>
-      `;
+      /* ★フォーマット修正（指定通り） */
+      li.innerHTML = `${name} : ${message} ${time}`;
     }
 
     return li;
   }
 
-  if (showOldMessages) {
-    oldMessages.forEach(t => list.appendChild(createMessageElement(t)));
-  } else {
-    const limited = newMessages.slice(-20); // ←20件制限
-    limited.forEach(t => list.appendChild(createMessageElement(t)));
-  }
+  /* ★ここがバグ修正ポイント */
+  const allMessages = showOldMessages
+    ? [...oldMessages, ...newMessages]
+    : newMessages.slice(-20);
+
+  allMessages.forEach(t => {
+    list.appendChild(createMessageElement(t));
+  });
 }
 
 /* Firestore */
@@ -226,7 +209,7 @@ msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
       if (diffSec < 60) timeText = `${diffSec}秒前`;
       else if (diffMin < 60) timeText = `${diffMin}分前`;
       else if (diffHour < 24) timeText = `${diffHour}時間前`;
-      else timeText = `${diffDay}日前`; // ←修正済み
+      else timeText = `${diffDay}日前`;
     }
 
     newMessages.unshift(`${data.name}: ${data.message} (${timeText})`);

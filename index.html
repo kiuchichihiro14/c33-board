@@ -151,7 +151,7 @@ function toggleOldMessages() {
   renderMessages(currentNewMessages, oldMessagesCache);
 }
 
-/* ★ここだけ修正（独自記号復活） */
+/* 独自記号 */
 function formatText(text) {
   text = text
     .replace(/&/g, "&amp;")
@@ -205,16 +205,20 @@ msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
 
   snapshot.docs.forEach(doc => {
     const data = doc.data();
-    const now = new Date();
 
     if (!data.time) return;
-    
-    const postedTime = data.time?.toDate();
+
+    const now = Date.now();
+    const postedTime = data.time?.toDate()?.getTime();
 
     let timeText = "不明";
 
     if (postedTime) {
-      const diffSec = Math.floor((now - postedTime) / 1000);
+      let diffSec = Math.floor((now - postedTime) / 1000);
+
+      // ★ここが修正（マイナス防止）
+      if (diffSec < 0) diffSec = 0;
+
       const diffMin = Math.floor(diffSec / 60);
       const diffHour = Math.floor(diffMin / 60);
       const diffDay = Math.floor(diffHour / 24);

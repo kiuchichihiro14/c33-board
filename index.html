@@ -13,12 +13,11 @@
       justify-content: center;
     }
 
-    /* 横幅修正（ここが今回の重要ポイント） */
     .main {
       width: 100%;
       padding: 0 10px;
       box-sizing: border-box;
-      max-width: none; /* ←固定解除 */
+      max-width: none;
     }
 
     header, footer, .toukou, .coment {
@@ -152,12 +151,22 @@ function toggleOldMessages() {
   renderMessages(currentNewMessages, oldMessagesCache);
 }
 
-/* 安全処理 */
+/* ★ここだけ修正（独自記号復活） */
 function formatText(text) {
-  return text
+  text = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+
+  text = text
+    .replace(/&lt;ft&gt;(.*?)&lt;\/ft&gt;/g, "<strong>$1</strong>")
+    .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<span class='blue'>$1</span>")
+    .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span class='red'>$1</span>")
+    .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>")
+    .replace(/&lt;g&gt;(.*?)&lt;\/g&gt;/g, "<span class='green'>$1</span>")
+    .replace(/&lt;o&gt;(.*?)&lt;\/o&gt;/g, "<span class='orange'>$1</span>");
+
+  return text;
 }
 
 /* 表示 */
@@ -175,14 +184,12 @@ function renderMessages(newMessages, oldMessages) {
       const message = formatText(match[2]);
       const time = match[3];
 
-      /* ★フォーマット修正（指定通り） */
       li.innerHTML = `${name} : ${message} ${time}`;
     }
 
     return li;
   }
 
-  /* ★ここがバグ修正ポイント */
   const allMessages = showOldMessages
     ? [...oldMessages, ...newMessages]
     : newMessages.slice(-20);

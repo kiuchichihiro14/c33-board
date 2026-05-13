@@ -1,302 +1,294 @@
-
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>chihiro簡易掲示板</title>
-    <meta charset="utf-8">
-    <style>
-      header, footer {
-        background-color: #ddd;
-        padding: 1rem;
-        text-align: center;
-      }
-      .setumei1 {
-        background-color: yellow;
-        display: inline;
-      }
-      .toukou {
-        border: 1px solid #333;
-        padding: 5px;
-        background-color: #f2f2f2;
-      }
-      .coment {
-        border: 1px solid #333;
-        padding: 5px;
-        background-color: #aaa;
-      }
-      .sabisii {
-        color: #999;
-      }
+<head>
+  <title>chihiro簡易掲示板</title>
+  <meta charset="utf-8">
 
-      /* 🔥 追加カラー */
-      .blue { color: blue; }
-      .red { color: red; }
-      .yellow { color: gold; }
-      .green { color: green; }
-      .orange { color: orange; }
-    </style>
-  </head>
-  <body>
-    <h2>c33簡易掲示板　　　Ver.1.2</h2>
-    <h4 id="userCount">現在の参加者数: 0人</h4>
-    <h2>卒業まで : <span id="countdown"></span></h2>
+  <style>
+    body {
+      background: #eef2f7;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
 
-    <header>
-      <h1>インターネット掲示板にようこそ!</h1>
-    </header>
+    .main {
+      width: 90%;
+      max-width: 600px;
+    }
 
-    <h5>
-      chihiroが適当に作りました。<br>なんか適当に遊んでってください。
-    </h5>
+    header, footer, .toukou, .coment {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
 
-    <h1>あんまり治安悪いと、サバ落とします</h1>
+    header {
+      background: linear-gradient(135deg, #4a90e2, #6fc3ff);
+      color: white;
+      text-align: center;
+    }
 
-    <h4>ルール↓</h4>
-    <h5>
-      <span class="setumei1">
-        暴力的な言葉、汚い(卑猥な)言葉、または特定の誰かを非難する言葉
-      </span>
-      は書き込まないでください!
-    </h5>
+    h1, h2, h3, h4, h5 {
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
 
-    <h5>
-      このサーバーは
-      <span class="setumei1">
-        社会の授業時、総合の授業時及び千尋の気が向いているとき
-      </span>
-      に公開されます。
-    </h5>
+    #messages {
+      list-style: none;
+      padding: 0;
+    }
 
-    <h5 class="sabisii">
-      最近誰も投稿してくれなくて寂しいので投稿して…
-    </h5>
+    #messages li {
+      background: white;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
 
-    <h5>
-      「こんな感じに変えて!!」は「リクエスト」という名前で投稿してください。
-    </h5>
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
 
-    <div class="coment">
-      <ul id="messages"></ul>
-    </div>
+    textarea {
+      min-height: 80px;
+    }
 
-    <button onclick="toggleOldMessages()">過去の投稿を表示 / 非表示</button>
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-    <h3>投稿フォーム↓</h3>
-    <div class="toukou">
-      <input id="name" placeholder="名前（15文字以内）" maxlength="30"><br>
-      <textarea id="msg" placeholder="メッセージ（30文字以内）" maxlength="100"></textarea><br>
-      <button onclick="sendMessage()">投稿</button><br>
-    </div>
+    button:hover {
+      background: #357abd;
+    }
 
-    <footer>
-      <h5>chihiro ga tukuri masita.</h5>
-    </footer>
+    .sabisii {
+      color: #999;
+    }
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    .blue { color: blue; }
+    .red { color: red; }
+    .yellow { color: gold; }
+    .green { color: green; }
+    .orange { color: orange; }
+  </style>
+</head>
 
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSy...",
-        authDomain: "chihirokeizibann.firebaseapp.com",
-        projectId: "chihirokeizibann",
-        storageBucket: "chihirokeizibann.firebasestorage.app",
-        messagingSenderId: "292382885477",
-        appId: "1:292382885477:web:7abe43da06f062d890288c"
-      };
+<body>
+<div class="main">
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const msgRef = db.collection("messages");
-      const onlineRef = db.collection("online_users");
+  <h2>c33簡易掲示板　Ver.2.0</h2>
+  <h4 id="userCount">現在の参加者数: 0人</h4>
+  <h2>卒業まで : <span id="countdown"></span></h2>
 
-      const myOnlineDoc = onlineRef.doc();
-      myOnlineDoc.set({
-        online: true,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+  <header>
+    <h1>インターネット掲示板にようこそ!</h1>
+  </header>
 
-      setInterval(() => {
-        myOnlineDoc.update({
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }, 5000);
+  <h5>chihiroが適当に作りました。遊んでね！</h5>
+  <h5 class="sabisii">最近投稿少なくて寂しい…</h5>
 
-      window.addEventListener("beforeunload", () => {
-        myOnlineDoc.delete();
-      });
+  <div class="coment">
+    <ul id="messages"></ul>
+  </div>
 
-      let showOldMessages = false;
-      let oldMessagesCache = [];
-      let currentNewMessages = [];
+  <button onclick="toggleOldMessages()">過去の投稿を表示 / 非表示</button>
 
-      function toggleOldMessages() {
-        showOldMessages = !showOldMessages;
-        renderMessages(currentNewMessages, oldMessagesCache);
-      }
+  <h3>投稿フォーム</h3>
 
-      /* 🔥 安全タグ変換（新仕様対応） */
-      function formatText(text) {
-        text = text
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+  <div class="toukou">
+    <input id="name" placeholder="名前（15文字以内）">
+    <textarea id="msg" placeholder="メッセージ"></textarea>
+    <button onclick="sendMessage()">投稿</button>
+  </div>
 
-        text = text
-          .replace(/&lt;ft&gt;(.*?)&lt;\/ft&gt;/g, "<strong>$1</strong>")
-          .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, "<span class='blue'>$1</span>")
-          .replace(/&lt;r&gt;(.*?)&lt;\/r&gt;/g, "<span class='red'>$1</span>")
-          .replace(/&lt;y&gt;(.*?)&lt;\/y&gt;/g, "<span class='yellow'>$1</span>")
-          .replace(/&lt;g&gt;(.*?)&lt;\/g&gt;/g, "<span class='green'>$1</span>")
-          .replace(/&lt;o&gt;(.*?)&lt;\/o&gt;/g, "<span class='orange'>$1</span>");
+  <footer>
+    <h5>chihiro ga tukuri masita.</h5>
+  </footer>
 
-        return text;
-      }
+</div>
 
-      function renderMessages(newMessages, oldMessages) {
-        const list = document.getElementById("messages");
-        list.innerHTML = "";
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-        function createMessageElement(text) {
-          const li = document.createElement("li");
-          const match = text.match(/^(.*?): (.*) \((.*)\)$/);
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "chihirokeizibann.firebaseapp.com",
+  projectId: "chihirokeizibann"
+};
 
-          if (match) {
-            const name = formatText(match[1]);
-            const message = formatText(match[2]);
-            const time = match[3];
-            li.innerHTML = `<strong>${name}</strong>: ${message} (${time})`;
-          } else {
-            li.innerHTML = formatText(text);
-          }
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const msgRef = db.collection("messages");
 
-          return li;
-        }
+let showOldMessages = false;
+let oldMessagesCache = [];
+let currentNewMessages = [];
 
-        if (showOldMessages) {
-          oldMessages.forEach(text => {
-            list.appendChild(createMessageElement(text));
-          });
-        }
+let myName = localStorage.getItem("myName") || "";
+document.getElementById("name").value = myName;
 
-        newMessages.forEach(text => {
-          list.appendChild(createMessageElement(text));
-        });
-      }
+document.getElementById("name").addEventListener("input", (e) => {
+  localStorage.setItem("myName", e.target.value);
+});
 
-      msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
-        const newMessages = [];
-        const oldMessages = [];
+function toggleOldMessages() {
+  showOldMessages = !showOldMessages;
+  renderMessages(currentNewMessages, oldMessagesCache);
+}
 
-        snapshot.docs.forEach((doc, index) => {
-          const data = doc.data();
-          const now = new Date();
-          const postedTime = data.time ? data.time.toDate() : null;
-          let timeText = "時刻不明";
+function formatText(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-          if (postedTime) {
-            const diffMs = now - postedTime;
-            const diffSec = Math.floor(diffMs / 1000);
-            const diffMin = Math.floor(diffSec / 60);
-            const diffHour = Math.floor(diffMin / 60);
-            const diffDay = Math.floor(diffHour / 24);
+function renderMessages(newMessages, oldMessages) {
+  const list = document.getElementById("messages");
+  list.innerHTML = "";
 
-            if (diffSec < 60) timeText = `${diffSec}秒前`;
-            else if (diffMin < 60) timeText = `${diffMin}分前`;
-            else if (diffHour < 24) timeText = `${diffHour}時間前`;
-            else timeText = `${diffDay}日前`;
-          }
+  function createMessageElement(text) {
+    const li = document.createElement("li");
 
-          const text = `${data.name}: ${data.message} (${timeText})`;
+    const match = text.match(/^(.*?): (.*) \((.*)\)$/);
 
-          if (index < 100) newMessages.unshift(text);
-          else oldMessages.unshift(text);
-        });
+    if (match) {
+      const name = formatText(match[1]);
+      const message = formatText(match[2]);
+      const time = match[3];
 
-        oldMessagesCache = oldMessages;
-        currentNewMessages = newMessages;
-        renderMessages(currentNewMessages, oldMessagesCache);
-      });
+      li.innerHTML = `
+        <div style="font-weight:bold;">
+          ${name}
+        </div>
+        <div>
+          ${message}
+        </div>
+        <div style="font-size:12px;color:#888;">
+          ${time}
+        </div>
+      `;
+    }
 
-      onlineRef.onSnapshot(snapshot => {
-        const now = new Date();
-        let count = 0;
+    // アニメーション
+    li.style.opacity = 0;
+    setTimeout(() => {
+      li.style.transition = "opacity 0.5s";
+      li.style.opacity = 1;
+    }, 10);
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.timestamp && (now - data.timestamp.toDate()) < 60000) {
-            count++;
-          }
-        });
+    return li;
+  }
 
-        document.getElementById("userCount").textContent =
-          `現在の参加者数: ${count}人`;
-      });
+  if (showOldMessages) {
+    oldMessages.forEach(text => {
+      list.appendChild(createMessageElement(text));
+    });
+  }
 
-      const NG_WORDS = [
-        "くんに","クンニ","まんこ","ちんこ","あなる","アナル",
-        "クリトリス","くりとりす","げい","ゲイ","えろ","エロ",
-        "体位","いく","イク","イキ","いき"
-      ];
+  newMessages.forEach(text => {
+    list.appendChild(createMessageElement(text));
+  });
+}
 
-      function sendMessage() {
-        const name = document.getElementById("name").value.trim();
-        const msg = document.getElementById("msg").value.trim();
+msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
+  const newMessages = [];
 
-        if (!name || !msg) {
-          alert("名前とメッセージを入力してください！");
-          return;
-        }
+  snapshot.docs.forEach(doc => {
+    const data = doc.data();
+    const now = new Date();
+    const postedTime = data.time?.toDate();
 
-        if (name.length > 15) {
-          alert("名前は15文字以内にしてください！");
-          return;
-        }
+    let timeText = "不明";
 
-        if (msg.length > 30) {
-          alert("メッセージは30文字以内にしてください！");
-          return;
-        }
+    if (postedTime) {
+      const diff = Math.floor((now - postedTime) / 1000);
+      if (diff < 60) timeText = `${diff}秒前`;
+      else if (diff < 3600) timeText = `${Math.floor(diff/60)}分前`;
+      else timeText = `${Math.floor(diff/3600)}時間前`;
+    }
 
-        for (const word of NG_WORDS) {
-          if (msg.includes(word) || name.includes(word)) {
-            alert(`NGワード「${word}」が含まれています！`);
-            return;
-          }
-        }
+    const text = `${data.name}: ${data.message} (${timeText})`;
+    newMessages.unshift(text);
+  });
 
-        msgRef.add({
-          name: name,
-          message: msg,
-          time: firebase.firestore.FieldValue.serverTimestamp()
-        });
+  currentNewMessages = newMessages;
+  renderMessages(currentNewMessages, oldMessagesCache);
+});
 
-        document.getElementById("msg").value = "";
-      }
+function sendMessage() {
+  const name = document.getElementById("name").value.trim();
+  const msg = document.getElementById("msg").value.trim();
 
-      const graduationDate = new Date("2026-03-10T10:00:00");
+  if (!name || !msg) {
+    alert("入力して！");
+    return;
+  }
 
-      function updateCountdown() {
-        const now = new Date();
-        const diffMs = graduationDate - now;
+  msgRef.add({
+    name: name,
+    message: msg,
+    time: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
-        if (diffMs <= 0) {
-          document.getElementById("countdown").textContent = "卒業おめでとう！🎉";
-          return;
-        }
+  // 即反映
+  currentNewMessages.unshift(`${name}: ${msg} (たった今)`);
+  renderMessages(currentNewMessages, oldMessagesCache);
 
-        const diffSec = Math.floor(diffMs / 1000);
-        const days = Math.floor(diffSec / (60 * 60 * 24));
-        const hours = Math.floor((diffSec % (60 * 60 * 24)) / (60 * 60));
-        const minutes = Math.floor((diffSec % (60 * 60)) / 60);
-        const seconds = diffSec % 60;
+  document.getElementById("msg").value = "";
+}
 
-        document.getElementById("countdown").textContent =
-          `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`;
-      }
+// Enterで送信
+document.getElementById("msg").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 
-      setInterval(updateCountdown, 1000);
-      updateCountdown();
-    </script>
-  </body>
+// カウントダウン
+const graduationDate = new Date("2026-03-10T10:00:00");
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = graduationDate - now;
+
+  if (diff <= 0) {
+    document.getElementById("countdown").textContent = "卒業おめでとう！";
+    return;
+  }
+
+  const sec = Math.floor(diff / 1000);
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+
+  document.getElementById("countdown").textContent =
+    `${d}日 ${h}時間 ${m}分`;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+</script>
+
+</body>
 </html>

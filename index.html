@@ -6,7 +6,7 @@
 
   <style>
     body {
-      background: #eef2f7;
+      background: #333333;
       font-family: "Segoe UI", sans-serif;
       margin: 0;
       display: flex;
@@ -22,7 +22,7 @@
     }
 
     header, footer, .toukou, .coment {
-      background: white;
+      background: #444444;
       padding: 12px;
       margin: 8px 0;
       border-radius: 10px;
@@ -30,23 +30,25 @@
     }
 
     header {
-      background: linear-gradient(135deg, #4a90e2, #6fc3ff);
+      background: linear-gradient(135deg, #444455, #333399);
       color: white;
       text-align: center;
     }
 
     h1, h2, h3, h4, h5 {
       margin: 8px 0;
+      color: #eeeeee;
     }
 
     #messages {
       list-style: none;
+      color: #eeeeee;
       padding: 0;
       margin: 0;
     }
 
     #messages li {
-      background: white;
+      background: #444444;
       margin: 4px 0;
       padding: 8px;
       border-radius: 8px;
@@ -54,6 +56,7 @@
 
     input, textarea {
       width: 100%;
+      color: #000000;
       padding: 12px;
       margin: 6px 0;
       border-radius: 10px;
@@ -94,7 +97,7 @@
 <body>
 <div class="main">
 
-  <h2>c33簡易掲示板 Ver.3.0</h2>
+  <h2>c33簡易掲示板 Ver.2.0</h2>
   <h4 id="userCount">現在の参加者数: 0人</h4>
   <h2>卒業まで : <span id="countdown"></span></h2>
 
@@ -244,7 +247,7 @@ document.getElementById("msg").addEventListener("keydown", (e) => {
 });
 
 /* カウントダウン */
-const graduationDate = new Date("2026-03-10T10:00:00");
+const graduationDate = new Date("2029-03-01T10:00:00");
 
 function updateCountdown() {
   const now = new Date();

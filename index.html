@@ -206,6 +206,9 @@ msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
   snapshot.docs.forEach(doc => {
     const data = doc.data();
     const now = new Date();
+
+    if (!data.time) return;
+    
     const postedTime = data.time?.toDate();
 
     let timeText = "不明";

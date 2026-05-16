@@ -170,22 +170,25 @@
 
       <div class="accordion">
         <div class="accordion-title" onclick="toggleAccordion(this)">
-          📢 お知らせ
+          アップデート情報
         </div>
         <div class="accordion-content">
           <h3>Ver-2.2アップデート情報</h3>
           <ul>
             <li>・色付きタグ機能の説明を追加</li>
-            <li> </li>
+            <br>
             <li>　サイト上部にあります。</li>
-            <li> </li>
+            <br>
             <li>・テーマ色のランダム変化</li>
-            <li> </li>
+            <br>
             <li>　ページを最新するごとにテーマが変わります。</li>
             <li>　テーマ色によっては一部の文章が読みづらくなっています。</li>
             <li>　そのような場合にはページを最新してください。</li>
+            <br>
             <li>・二段階パスワード制の導入</li>
+            <br>
             <li>　サイトに入るためのパスワードと投稿権限用のパスワードを追加しました。</li>
+            <br>
           </ul>
 
           <h4>目に優しくなりました</h4>
@@ -591,7 +594,7 @@
 
         localStorage.setItem("viewAuth", "ok");
       } else {
-        alert("パスワードが違う");
+        alert("パスワードが一致しません。");
       }
     }
 

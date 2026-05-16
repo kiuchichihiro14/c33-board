@@ -306,6 +306,7 @@
 
     const POST_PASSWORD = "3141592653589"; // ←好きに変えてOK
     const VIEW_PASSWORD = "kamakiri-1H"; // ←好きに変更
+    let lastVisible = null;
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -401,8 +402,51 @@
     /* =========================
        📌 OLD MESSAGE TOGGLE
     ========================= */
-    function toggleOldMessages() {
+    async function toggleOldMessages() {
       showOldMessages = !showOldMessages;
+
+      if (showOldMessages && lastVisible) {
+        const snapshot = await msgRef
+          .orderBy("time", "desc")
+          .startAfter(lastVisible)
+          .limit(20)
+          .get();
+
+        const oldMessages = [];
+
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (!data.time) return;
+
+          const now = Date.now();
+          const postedTime = data.time?.toDate()?.getTime();
+
+          let timeText = "不明";
+
+          if (postedTime) {
+            let diffSec = Math.floor((now - postedTime) / 1000);
+            if (diffSec < 0) diffSec = 0;
+
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+
+            if (diffSec < 60) timeText = `${diffSec}秒前`;
+            else if (diffMin < 60) timeText = `${diffMin}分前`;
+            else if (diffHour < 24) timeText = `${diffHour}時間前`;
+            else timeText = `${diffDay}日前`;
+          }
+
+          oldMessages.unshift(`${data.name}: ${data.message} (${timeText})`);
+        });
+
+        oldMessagesCache = oldMessages;
+
+        if (snapshot.docs.length > 0) {
+          lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        }
+      }
+
       renderMessages(currentNewMessages, oldMessagesCache);
     }
 
@@ -461,7 +505,10 @@
     /* =========================
        🔥 FIRESTORE
     ========================= */
-    msgRef.orderBy("time", "desc").onSnapshot(snapshot => {
+    msgRef
+      .orderBy("time","desc")
+      .limit(20)
+      .onSnapshot(snapshot => {
       const newMessages = [];
 
       snapshot.docs.forEach(doc => {
@@ -492,6 +539,10 @@
 
       currentNewMessages = newMessages;
       renderMessages(currentNewMessages, oldMessagesCache);
+
+      if (snapshot.docs.length > 0) {
+        lastVisible = snapshot.docs[snapshot.docs.length - 1];
+      }
     });
 
     /* =========================
